@@ -282,6 +282,7 @@ export const createToolHandlerContext = async <TParams = Record<string, unknown>
     filestore,
     skillServiceStart,
     toolManager,
+    defaultConnectorId,
   } = manager.deps;
   const spaceId = getCurrentSpaceId({ request, spaces });
 
@@ -295,6 +296,7 @@ export const createToolHandlerContext = async <TParams = Record<string, unknown>
     callContext,
     request,
     spaceId,
+    defaultConnectorId,
     logger,
     esClient: elasticsearch.client.asScoped(request),
     savedObjectsClient: savedObjects.getScopedClient(request),
