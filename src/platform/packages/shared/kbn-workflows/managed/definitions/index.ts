@@ -49,6 +49,14 @@ export {
   SIGEVENTS_TRIAGE_WORKFLOW_ID,
 } from './sig_events';
 
+// Registering the AD workflow definitions in the managed-workflows registry is
+// FF-off safe: definitions in this list are only INSTALLED into Elasticsearch
+// when a registered owner plugin calls `installManagedWorkflow`. The discoveries
+// plugin (the owner of these definitions) is itself gated by the
+// `securitySolution.attackDiscoveryWorkflowsEnabled` feature flag, so with the
+// FF off the discoveries plugin does not load and none of these workflows get
+// installed. Adding them to the registry only makes them *discoverable* by id
+// (which the discoveries plugin's integrity check exercises in tests).
 export const managedWorkflowDefinitions = [
   ATTACK_DISCOVERY_ALERT_RETRIEVAL_WORKFLOW,
   ATTACK_DISCOVERY_CUSTOM_VALIDATION_EXAMPLE_WORKFLOW,
