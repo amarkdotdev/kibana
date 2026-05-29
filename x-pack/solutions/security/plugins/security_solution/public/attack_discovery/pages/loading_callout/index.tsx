@@ -312,13 +312,15 @@ const LoadingCalloutComponent: React.FC<Props> = ({
                     `}
                   />
                 ) : (
-                  <EuiButtonIcon
-                    aria-label={i18n.CLOSE}
-                    disabled={isDismissing}
-                    iconType="cross"
-                    onClick={dismissGeneration}
-                    data-test-subj="dismissButton"
-                  />
+                  <EuiToolTip content={i18n.CLOSE} disableScreenReaderOutput>
+                    <EuiButtonIcon
+                      aria-label={i18n.CLOSE}
+                      disabled={isDismissing}
+                      iconType="cross"
+                      onClick={dismissGeneration}
+                      data-test-subj="dismissButton"
+                    />
+                  </EuiToolTip>
                 )}
               </EuiFlexItem>
             )}
