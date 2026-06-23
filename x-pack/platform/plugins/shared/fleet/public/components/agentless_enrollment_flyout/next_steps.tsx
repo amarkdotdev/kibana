@@ -18,15 +18,17 @@ import {
 import { i18n } from '@kbn/i18n';
 
 import { useStartServices } from '../../hooks';
-import type { PackagePolicy, RegistryPolicyTemplate } from '../../types';
+import type { RegistryPolicyTemplate } from '../../types';
 import { ELASTICSEARCH_PLUGIN_ID } from '../../../common/constants/plugin';
 
+import type { AgentlessEnrollmentConnector } from './types';
+
 export const NextSteps = ({
-  packagePolicy,
   policyTemplates,
+  connectors,
 }: {
-  packagePolicy: PackagePolicy;
   policyTemplates?: RegistryPolicyTemplate[];
+  connectors?: AgentlessEnrollmentConnector[];
 }) => {
   const { application } = useStartServices();
 
@@ -87,14 +89,17 @@ export const NextSteps = ({
       );
     });
 
-  const connectorCards = packagePolicy.inputs
-    .filter((input) => !!input?.vars?.connector_id?.value || !!input?.vars?.connector_name?.value)
-    .map((input, index) => {
+  const connectorCards = (connectors ?? [])
+    .filter((connector) => !!connector.id || !!connector.name)
+    .map((connector, index) => {
+      // An agentless connector may carry only an id; fall back to it so the card
+      // never renders a blank title or an empty data-test-subj suffix.
+      const connectorLabel = connector.name || connector.id;
       return (
         <EuiFlexItem key={index}>
           <EuiCard
-            data-test-subj={`agentlessStepConfirmData.connectorCard.${input?.vars?.connector_name?.value}`}
-            title={`${input?.vars?.connector_name.value}`}
+            data-test-subj={`agentlessStepConfirmData.connectorCard.${connectorLabel}`}
+            title={`${connectorLabel}`}
             description={i18n.translate(
               'xpack.fleet.agentlessStepConfirmData.connectorCard.description',
               {
@@ -103,9 +108,7 @@ export const NextSteps = ({
             )}
             onClick={() => {
               application.navigateToApp(ELASTICSEARCH_PLUGIN_ID, {
-                path: input?.vars?.connector_id?.value
-                  ? `content/connectors/${input?.vars?.connector_id?.value}`
-                  : `content/connectors`,
+                path: connector.id ? `content/connectors/${connector.id}` : `content/connectors`,
               });
             }}
           />
