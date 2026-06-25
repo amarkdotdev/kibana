@@ -7,11 +7,18 @@
 
 import { type TypeOf, schema } from '@kbn/config-schema';
 
+import type {
+  GetAgentlessPolicyRequestSchema,
+  ListAgentlessPoliciesRequestSchema,
+  AgentlessPolicyListResponseSchema,
+} from '../../../server/types';
+
 import { SimplifiedCreatePackagePolicyRequestBodySchema } from '../models/package_policy_schema';
 import type { AgentlessPolicyResponseSchema } from '../models/agentless_policy_schema';
 
 export const CreateAgentlessPolicyRequestSchema = {
-  body: SimplifiedCreatePackagePolicyRequestBodySchema.extends({
+  body: SimplifiedCreatePackagePolicyRequestBodySchema.extends(
+    {
       // Remove all properties that are not relevant for agentless policies
       policy_id: undefined,
       policy_ids: undefined,
@@ -144,3 +151,15 @@ export interface DeleteAgentlessPolicyRequest {
   params: TypeOf<typeof DeleteAgentlessPolicyRequestSchema.params>;
   query: TypeOf<typeof DeleteAgentlessPolicyRequestSchema.query>;
 }
+
+export interface GetAgentlessPolicyRequest {
+  params: TypeOf<typeof GetAgentlessPolicyRequestSchema.params>;
+}
+
+export type GetAgentlessPolicyResponse = TypeOf<typeof AgentlessPolicyResponseSchema>;
+
+export interface ListAgentlessPoliciesRequest {
+  query: TypeOf<typeof ListAgentlessPoliciesRequestSchema.query>;
+}
+
+export type ListAgentlessPoliciesResponse = TypeOf<typeof AgentlessPolicyListResponseSchema>;
