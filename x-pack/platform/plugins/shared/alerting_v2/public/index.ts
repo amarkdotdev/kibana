@@ -29,6 +29,7 @@ import {
 } from './constants';
 import { ActionPoliciesApi } from './services/action_policies_api';
 import { ExecutionHistoryApi } from './services/execution_history_api';
+import { RuleExecutionHistoryApi } from './services/rule_execution_history_api';
 import { RulesApi } from './services/rules_api';
 import { registerTriggerDefinitions } from './lib/workflow_extensions/register_trigger_definitions';
 import { disableAlertingManagementUi } from './lib/disable_management_ui';
@@ -54,6 +55,7 @@ export const module = new ContainerModule(({ bind }) => {
   bind(RulesApi).toSelf().inSingletonScope();
   bind(ActionPoliciesApi).toSelf().inSingletonScope();
   bind(ExecutionHistoryApi).toSelf().inSingletonScope();
+  bind(RuleExecutionHistoryApi).toSelf().inSingletonScope();
   bind(WorkflowApi)
     .toDynamicValue(({ get }) => new WorkflowApi(get(CoreStart('http'))))
     .inSingletonScope();
