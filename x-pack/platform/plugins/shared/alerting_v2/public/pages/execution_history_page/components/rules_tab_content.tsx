@@ -11,6 +11,7 @@ import {
   EuiBasicTable,
   EuiFlexGroup,
   EuiFlexItem,
+  EuiButtonEmpty,
   EuiSelect,
   EuiSpacer,
   type CriteriaWithPagination,
@@ -20,14 +21,14 @@ import { css } from '@emotion/react';
 import { i18n } from '@kbn/i18n';
 import moment from 'moment';
 import { CoreStart, useService } from '@kbn/core-di-browser';
+import { asDuration } from '@kbn/alerts-ui-shared';
 import type { RuleExecutionOutcome, RuleExecutionView } from '@kbn/alerting-v2-schemas';
 import { RULE_EXECUTIONS_MAX_RESULT_WINDOW } from '@kbn/alerting-v2-schemas';
 import { useFetchRuleExecutions } from '../../../hooks/use_fetch_rule_executions';
 import { FilteredEmptyState, RulesEmptyState } from './empty_state';
 import { ExecutionHistoryErrorState } from './error_state';
-import { ExpandableCell } from './expandable_cell';
 
-const DEFAULT_PER_PAGE = 100;
+const DEFAULT_PER_PAGE = 10;
 
 const noFlexGrowCss = css`
   flex-grow: 0;
@@ -59,13 +60,10 @@ const OUTCOME_OPTIONS: Array<{ value: RuleOutcomeFilter; text: string }> = [
   },
 ];
 
-const formatDuration = (ms: number): string => {
-  if (ms < 1000) return `${ms}ms`;
-  return `${(ms / 1000).toFixed(1)}s`;
-};
+const MS_TO_US = 1000;
 
 const buildColumns = (
-  formatTimestamp: (value: string) => string,
+  dateTimeFormat: string,
   onRuleClick: (ruleId: string) => void
 ): Array<EuiBasicTableColumn<RuleExecutionView>> => [
   {
@@ -74,27 +72,33 @@ const buildColumns = (
       defaultMessage: 'Timestamp',
     }),
     width: '15%',
-    render: (value: string) => formatTimestamp(value),
+    render: (value: string) => moment(value).format(dateTimeFormat),
   },
   {
     name: i18n.translate('xpack.alertingV2.executionHistory.rulesTab.columns.rule', {
       defaultMessage: 'Rule',
     }),
     width: '15%',
-    render: (item: RuleExecutionView) => (
-      <ExpandableCell
-        text={item.rule.name ?? item.rule.id}
-        onClick={() => onRuleClick(item.rule.id)}
-        data-test-subj={`ruleExecutionHistoryRuleLink-${item.rule.id}`}
-      />
-    ),
+    render: (item: RuleExecutionView) =>
+      item.rule.name != null ? (
+        <EuiButtonEmpty
+          size="xs"
+          flush="left"
+          onClick={() => onRuleClick(item.rule.id)}
+          data-test-subj={`ruleExecutionHistoryRuleLink-${item.rule.id}`}
+        >
+          {item.rule.name}
+        </EuiButtonEmpty>
+      ) : (
+        item.rule.id
+      ),
   },
   {
     name: i18n.translate('xpack.alertingV2.executionHistory.rulesTab.columns.duration', {
       defaultMessage: 'Duration',
     }),
     width: '10%',
-    render: (item: RuleExecutionView) => formatDuration(item.timings.duration),
+    render: (item: RuleExecutionView) => asDuration(item.timings.duration * MS_TO_US),
   },
   {
     field: 'outcome',
@@ -116,18 +120,14 @@ const buildColumns = (
       defaultMessage: 'Message',
     }),
     width: '50%',
-    render: (item: RuleExecutionView) => {
-      const message =
-        item.error?.message ??
-        item.reason ??
-        (item.outcome === 'success'
-          ? i18n.translate('xpack.alertingV2.executionHistory.rulesTab.successMessage', {
-              defaultMessage: 'Rule executed successfully',
-            })
-          : '\u2014');
-
-      return <ExpandableCell text={message} data-test-subj="ruleExecutionHistoryMessage" />;
-    },
+    render: (item: RuleExecutionView) =>
+      item.error?.message ??
+      item.reason ??
+      (item.outcome === 'success'
+        ? i18n.translate('xpack.alertingV2.executionHistory.rulesTab.successMessage', {
+            defaultMessage: 'Rule executed successfully',
+          })
+        : '\u2014'),
   },
 ];
 
@@ -165,7 +165,7 @@ export const RulesTabContent = ({ onRuleClick }: Props) => {
   );
 
   const columns = useMemo(
-    () => buildColumns((value) => moment(value).format(dateTimeFormat), onRuleClick),
+    () => buildColumns(dateTimeFormat, onRuleClick),
     [dateTimeFormat, onRuleClick]
   );
 

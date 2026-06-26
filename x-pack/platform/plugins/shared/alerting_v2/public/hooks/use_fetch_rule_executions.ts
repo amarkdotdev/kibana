@@ -7,26 +7,16 @@
 
 import { useQuery } from '@kbn/react-query';
 import { useService } from '@kbn/core-di-browser';
-import type { GetRuleExecutionsResponse, RuleExecutionOutcome } from '@kbn/alerting-v2-schemas';
+import type { GetRuleExecutionsQuery, GetRuleExecutionsResponse } from '@kbn/alerting-v2-schemas';
 import { RuleExecutionHistoryApi } from '../services/rule_execution_history_api';
 import { ruleExecutionKeys } from './query_key_factory';
 
-interface UseFetchRuleExecutionsParams {
-  page: number;
-  perPage: number;
-  outcome?: RuleExecutionOutcome[];
-}
-
-export const useFetchRuleExecutions = ({
-  page,
-  perPage,
-  outcome,
-}: UseFetchRuleExecutionsParams) => {
+export const useFetchRuleExecutions = (params: Partial<GetRuleExecutionsQuery>) => {
   const api = useService(RuleExecutionHistoryApi);
 
   return useQuery<GetRuleExecutionsResponse, Error>({
-    queryKey: ruleExecutionKeys.list({ page, perPage, outcome }),
-    queryFn: () => api.getRuleExecutions({ page, perPage, outcome }),
+    queryKey: ruleExecutionKeys.list(params),
+    queryFn: () => api.getRuleExecutions(params),
     refetchOnWindowFocus: false,
     keepPreviousData: true,
   });

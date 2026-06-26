@@ -50,7 +50,7 @@ const mockResult = (
   }> = {}
 ) => {
   mockUseFetchRuleExecutions.mockReturnValue({
-    data: { items: [], total: 0, page: 1, perPage: 100 },
+    data: { items: [], total: 0, page: 1, perPage: 10 },
     isFetching: false,
     isError: false,
     refetch: mockRefetch,
@@ -80,13 +80,13 @@ describe('RulesTabContent', () => {
     expect(screen.getByTestId('ruleExecutionHistoryOutcomeFilter')).toBeInTheDocument();
   });
 
-  it('calls useFetchRuleExecutions with default params (page 1, perPage 100, no outcome)', () => {
+  it('calls useFetchRuleExecutions with default params (page 1, perPage 10, no outcome)', () => {
     mockResult();
     renderComponent();
 
     expect(mockUseFetchRuleExecutions).toHaveBeenCalledWith({
       page: 1,
-      perPage: 100,
+      perPage: 10,
       outcome: undefined,
     });
   });
@@ -110,13 +110,13 @@ describe('RulesTabContent', () => {
     renderComponent();
 
     expect(screen.getByText(/2026-05-05/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'My Rule' })).toBeInTheDocument();
-    expect(screen.getByText('1.5s')).toBeInTheDocument();
+    expect(screen.getByText('My Rule')).toBeInTheDocument();
+    expect(screen.getByText('1.5 s')).toBeInTheDocument();
     expect(screen.getByText('success')).toBeInTheDocument();
     expect(screen.getByText('Completed successfully')).toBeInTheDocument();
   });
 
-  it('calls onRuleClick when the rule name is clicked', async () => {
+  it('calls onRuleClick when the rule name link is clicked', async () => {
     mockResult({
       data: {
         items: [buildItem()],
@@ -127,11 +127,11 @@ describe('RulesTabContent', () => {
     });
     renderComponent();
 
-    await userEvent.click(screen.getByRole('button', { name: 'My Rule' }));
+    await userEvent.click(screen.getByText('My Rule'));
     expect(mockOnRuleClick).toHaveBeenCalledWith('rule-1');
   });
 
-  it('falls back to rule id when rule name is null', () => {
+  it('shows rule id as plain text when rule name is null', () => {
     mockResult({
       data: {
         items: [buildItem({ rule: { id: 'rule-orphan', name: null } })],
@@ -142,7 +142,8 @@ describe('RulesTabContent', () => {
     });
     renderComponent();
 
-    expect(screen.getByRole('button', { name: 'rule-orphan' })).toBeInTheDocument();
+    expect(screen.getByText('rule-orphan')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'rule-orphan' })).not.toBeInTheDocument();
   });
 
   it('shows error message when outcome is failure', () => {
@@ -216,7 +217,7 @@ describe('RulesTabContent', () => {
     await waitFor(() => {
       expect(mockUseFetchRuleExecutions).toHaveBeenLastCalledWith({
         page: 1,
-        perPage: 100,
+        perPage: 10,
         outcome: ['failure'],
       });
     });
@@ -245,7 +246,7 @@ describe('RulesTabContent', () => {
     });
     renderComponent();
 
-    expect(screen.getByText('250ms')).toBeInTheDocument();
+    expect(screen.getByText('250 ms')).toBeInTheDocument();
   });
 
   it('renders pagination with 10, 50, 100 page size options', () => {

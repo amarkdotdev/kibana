@@ -230,7 +230,7 @@ describe('ExecutionHistoryPage', () => {
 
       expect(mockUseFetchRuleExecutions).toHaveBeenCalledWith({
         page: 1,
-        perPage: 100,
+        perPage: 10,
         outcome: undefined,
       });
     });

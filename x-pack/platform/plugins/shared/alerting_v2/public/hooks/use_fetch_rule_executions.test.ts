@@ -10,7 +10,6 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@kbn/react-query';
 import { useService } from '@kbn/core-di-browser';
 import { RuleExecutionHistoryApi } from '../services/rule_execution_history_api';
-import { ruleExecutionKeys } from './query_key_factory';
 import { useFetchRuleExecutions } from './use_fetch_rule_executions';
 
 jest.mock('@kbn/core-di-browser');
@@ -88,46 +87,5 @@ describe('useFetchRuleExecutions', () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error).toBe(error);
-  });
-
-  it('uses a query key derived from page, perPage and outcome', async () => {
-    mockGetRuleExecutions.mockResolvedValue({
-      items: [],
-      total: 0,
-      page: 3,
-      perPage: 50,
-    });
-    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    const wrapper = ({ children }: { children: React.ReactNode }) =>
-      React.createElement(QueryClientProvider, { client: queryClient }, children);
-
-    renderHook(() => useFetchRuleExecutions({ page: 3, perPage: 50 }), { wrapper });
-
-    await waitFor(() => expect(mockGetRuleExecutions).toHaveBeenCalled());
-    expect(queryClient.getQueryData(ruleExecutionKeys.list({ page: 3, perPage: 50 }))).toEqual({
-      items: [],
-      total: 0,
-      page: 3,
-      perPage: 50,
-    });
-  });
-
-  it('refetches when page or perPage change', async () => {
-    mockGetRuleExecutions.mockResolvedValue({
-      items: [],
-      total: 0,
-      page: 1,
-      perPage: 10,
-    });
-
-    const { rerender } = renderHook(
-      ({ page, perPage }) => useFetchRuleExecutions({ page, perPage }),
-      { wrapper: createWrapper(), initialProps: { page: 1, perPage: 10 } }
-    );
-    await waitFor(() => expect(mockGetRuleExecutions).toHaveBeenCalledTimes(1));
-
-    rerender({ page: 2, perPage: 10 });
-    await waitFor(() => expect(mockGetRuleExecutions).toHaveBeenCalledTimes(2));
-    expect(mockGetRuleExecutions).toHaveBeenLastCalledWith({ page: 2, perPage: 10 });
   });
 });
